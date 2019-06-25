@@ -17,16 +17,17 @@ pipeline {
         sh '/bin/phpunit ${WORKSPACE}/src'
       }
     }
-    stage('JIRA') {
+    stage('Merge PR') {
       when {
-        not {
-          branch 'master'
-        }
+        branch 'PR-*'
       }
       steps {
-        script {
-          response = jiraAddComment site: 'practical-jenkins-jira', idOrKey: env.GIT_BRANCH, comment: "Build result: Job - ${JOB_NAME} Build number - ${BUILD_NUMBER} Build URL - ${BUILD_URL}"
-        }
+        sh 'git remote set-url origin git@github.com:szhouchoice/sample-php-project.git'       
+        sh 'git remote set-braches -add origin ${CHANGE_TARGET}'
+        sh 'git fetch origin'
+        sh 'git checkout ${CHANGE_TARGET}'
+        sh 'git merge --no-ff ${GIT_COMMIT}'
+        sh 'git push origin ${CHANGE_TARGET}'
       }
     }
   }
